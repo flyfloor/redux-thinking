@@ -103,6 +103,23 @@ const getFilterTodos = (todos, filter) => {
     }
 }
 
+const Todo = ({ text, completed, onClick }) => {
+    return <li onClick={onClick}
+                style={{textDecoration: completed ? 'line-through': 'none'}}>
+                {text}
+            </li>
+}
+
+const TodoList = ({ todos, onTodoClick }) => {
+    return <ul>
+                {todos.map(todo => {
+                    return <Todo key={todo.id} 
+                                {...todo}
+                                onClick={() => onTodoClick(todo.id)}/>
+                })}
+            </ul>
+}
+
 let nextTodoId = 0;
 
 class TodoApp extends React.Component {
@@ -139,14 +156,11 @@ class TodoApp extends React.Component {
             <div>
                 <input type="text" value={this.state.text} onChange={(e) => this.setState({text: e.target.value})}/>
                 <button onClick={this.handleAddTodo.bind(this)}>add todo</button>
-                <ul>
-                    {filterTodos.map(todo => {
-                        return <li key={todo.id} onClick={this.handleToggle.bind(this, todo.id)}
-                                    style={{textDecoration: todo.completed ? 'line-through': 'none'}}>
-                                    {todo.text}
-                                </li>
-                    })}
-                </ul>
+                <TodoList todos={filterTodos} 
+                    onTodoClick={(id) => store.dispatch({
+                        id: id,
+                        type: 'TOGGLE_TODO'
+                    })}/>
                 <p>
                     filter: 
                     <FilterLink filter='ALL' currentFilter={displayFilter}>
