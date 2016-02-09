@@ -82,7 +82,8 @@ const todoAppReducer = (state = {}, action) => {
 const store = createStore(todoAppReducer)
 
 
-const FilterLink = ({filter, children}) => {
+const FilterLink = ({filter, currentFilter, children}) => {
+    if (currentFilter === filter) return <span> {children} </span>;
     return (
         <a href="javascript:;" style={{marginRight: 3}}
             onClick={ () => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter }) }>
@@ -131,23 +132,13 @@ class TodoApp extends React.Component {
     };
 
     render() {
-        const filterTodos = getFilterTodos(this.props.todos, this.props.displayFilter);
+        const {todos, displayFilter} = this.props;
+
+        const filterTodos = getFilterTodos(todos, displayFilter);
         return (
             <div>
                 <input type="text" value={this.state.text} onChange={(e) => this.setState({text: e.target.value})}/>
                 <button onClick={this.handleAddTodo.bind(this)}>add todo</button>
-                <p>
-                    filter: 
-                    <FilterLink filter='ALL'>
-                        all
-                    </FilterLink>
-                    <FilterLink filter='COMPLETED'> 
-                        completed 
-                    </FilterLink>
-                    <FilterLink filter='ACTIVE'> 
-                        active 
-                    </FilterLink>
-                </p>
                 <ul>
                     {filterTodos.map(todo => {
                         return <li key={todo.id} onClick={this.handleToggle.bind(this, todo.id)}
@@ -156,6 +147,18 @@ class TodoApp extends React.Component {
                                 </li>
                     })}
                 </ul>
+                <p>
+                    filter: 
+                    <FilterLink filter='ALL' currentFilter={displayFilter}>
+                        all
+                    </FilterLink>
+                    <FilterLink filter='COMPLETED' currentFilter={displayFilter}> 
+                        completed 
+                    </FilterLink>
+                    <FilterLink filter='ACTIVE' currentFilter={displayFilter}> 
+                        active 
+                    </FilterLink>
+                </p>
             </div>
         );
     }
