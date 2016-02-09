@@ -81,24 +81,60 @@ const todoAppReducer = (state = {}, action) => {
 
 const store = createStore(todoAppReducer)
 
-store.dispatch(
-  {
-    id: 1,
-    text: 'first todo', 
-    type: 'ADD_TODO'
-  },)
-  
-store.dispatch({
-    id: 2,
-    text: 'second todo', 
-    type: 'ADD_TODO'
- })
+let nextTodoId = 0;
+
+class TodoApp extends React.Component {
+    constructor(props){
+        super(props);
+        this.state = {
+            text: '',
+        };
+    };
+
+    handleAddTodo(){
+        store.dispatch({
+            id: nextTodoId++,
+            text: this.state.text,
+            type: 'ADD_TODO'
+        });
+        this.setState({
+            text:'',
+        });
+    };
+
+    handleToggle(id){
+       store.dispatch({
+            id: id,
+            type: 'TOGGLE_TODO'
+       }); 
+    };
+
+    render() {
+        return (
+            <div>
+                <input type="text" value={this.state.text} onChange={(e) => this.setState({text: e.target.value})}/>
+                <button onClick={this.handleAddTodo.bind(this)}>add todo</button>
+                <ul>
+                    {this.props.todos.map(todo => {
+                        return <li key={todo.id} onClick={this.handleToggle.bind(this, todo.id)}>
+                                    {todo.text}
+                                    {todo.completed ? <span>✔</span>: null}
+                                </li>
+                    })}
+                </ul>
+            </div>
+        );
+    }
+}
 
 
-store.dispatch({id: 2, type: 'TOGGLE_TODO'})
+const render = () => {
+    ReactDOM.render(
+        <TodoApp todos={store.getState().todos}/>,
+        document.getElementById('root')
+    )
+}
 
-console.log(store.getState())
+store.subscribe(render)
 
-store.dispatch({type: 'SET_DISPLAY_FILTER', filter: 'COMPLETED'})
-
-console.log(store.getState())
+render()
