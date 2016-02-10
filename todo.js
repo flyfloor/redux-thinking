@@ -82,11 +82,11 @@ const todoAppReducer = (state = {}, action) => {
 const store = createStore(todoAppReducer)
 
 
-const FilterLink = ({filter, currentFilter, children}) => {
+const FilterLink = ({filter, currentFilter, children, onClick}) => {
     if (currentFilter === filter) return <span> {children} </span>;
     return (
         <a href="javascript:;" style={{marginRight: 3}}
-            onClick={ () => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter }) }>
+            onClick={() => onClick(filter)}>
             {children}
         </a>
     )
@@ -118,6 +118,27 @@ const TodoList = ({ todos, onTodoClick }) => {
                                 onClick={() => onTodoClick(todo.id)}/>
                 })}
             </ul>
+}
+
+const Footer = ({ displayFilter, onFliterClick }) => {
+    return <p>
+                filter: 
+                <FilterLink filter='ALL' 
+                    currentFilter={displayFilter}
+                    onClick={onFliterClick}>
+                    all
+                </FilterLink>
+                <FilterLink filter='COMPLETED' 
+                    currentFilter={displayFilter}
+                    onClick={onFliterClick}> 
+                    completed 
+                </FilterLink>
+                <FilterLink filter='ACTIVE' 
+                    currentFilter={displayFilter}
+                    onClick={onFliterClick}> 
+                    active 
+                </FilterLink>
+            </p>
 }
 
 let nextTodoId = 0;
@@ -161,18 +182,8 @@ class TodoApp extends React.Component {
                         id: id,
                         type: 'TOGGLE_TODO'
                     })}/>
-                <p>
-                    filter: 
-                    <FilterLink filter='ALL' currentFilter={displayFilter}>
-                        all
-                    </FilterLink>
-                    <FilterLink filter='COMPLETED' currentFilter={displayFilter}> 
-                        completed 
-                    </FilterLink>
-                    <FilterLink filter='ACTIVE' currentFilter={displayFilter}> 
-                        active 
-                    </FilterLink>
-                </p>
+                <Footer currentFilter={displayFilter} 
+                    onFliterClick={filter => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter })}/>
             </div>
         );
     }
