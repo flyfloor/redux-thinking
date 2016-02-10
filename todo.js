@@ -79,8 +79,6 @@ const todoAppReducer = (state = {}, action) => {
     }
 }
 
-const store = createStore(todoAppReducer)
-
 
 const Link = ({active, children, onClick}) => {
     if (active) return <span> {children} </span>;
@@ -91,33 +89,6 @@ const Link = ({active, children, onClick}) => {
         </a>
     )
 }
-
-class FilterLink extends React.Component {
-    componentDidMount() {
-        this.unsubscribe = store.subscribe(() => {
-            this.forceUpdate();
-        })    
-    }
-
-    componentWillUnmount() {
-        this.unsubscribe();
-    }
-
-    render() {
-        const props = this.props;
-        const state = store.getState();
-
-        console.log(state)
-
-        return (
-            <Link active={props.filter === state.displayFilter}
-                onClick={() => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter: props.filter })}>
-                {props.children}
-            </Link>
-        );
-    }
-}
-
 
 const getFilterTodos = (todos, filter) => {
     switch(filter) {
@@ -147,6 +118,7 @@ const TodoList = ({ todos, onTodoClick }) => {
             </ul>
 }
 
+
 const Footer = ({}) => {
     return <p>
                 filter: 
@@ -162,62 +134,98 @@ const Footer = ({}) => {
             </p>
 }
 
+const store = createStore(todoAppReducer)
+
+// container
+
 let nextTodoId = 0;
 
-class TodoApp extends React.Component {
-    constructor(props){
-        super(props);
-        this.state = {
-            text: '',
-        };
-    };
+class FilterLink extends React.Component {
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(() => {
+            this.forceUpdate();
+        })    
+    }
 
-    handleAddTodo(){
-        store.dispatch({
-            id: nextTodoId++,
-            text: this.state.text,
-            type: 'ADD_TODO'
-        });
-        this.setState({
-            text:'',
-        });
-    };
-
-    handleToggle(id){
-       store.dispatch({
-            id: id,
-            type: 'TOGGLE_TODO'
-       }); 
-    };
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
 
     render() {
-        const {todos, displayFilter} = this.props;
+        const props = this.props;
+        const state = store.getState();
 
-        const filterTodos = getFilterTodos(todos, displayFilter);
         return (
-            <div>
-                <input type="text" value={this.state.text} onChange={(e) => this.setState({text: e.target.value})}/>
-                <button onClick={this.handleAddTodo.bind(this)}>add todo</button>
-                <TodoList todos={filterTodos} 
-                    onTodoClick={(id) => store.dispatch({
-                        id: id,
-                        type: 'TOGGLE_TODO'
-                    })}/>
-                <Footer currentFilter={displayFilter} 
-                    onFliterClick={filter => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter })}/>
-            </div>
+            <Link active={props.filter === state.displayFilter}
+                onClick={() => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter: props.filter })}>
+                {props.children}
+            </Link>
         );
     }
 }
 
 
-const render = () => {
-    ReactDOM.render(
-        <TodoApp {...store.getState()}/>,
-        document.getElementById('root')
+class FilterTodoList extends React.Component {
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(() => {
+            this.forceUpdate();
+        })    
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
+
+    render() {
+        const props = this.props;
+        const state = store.getState();
+
+        return (
+            <TodoList 
+                todos={ getFilterTodos(state.todos, state.displayFilter)}
+                onTodoClick={(id) => store.dispatch({
+                    id,
+                    type: 'TOGGLE_TODO'
+                })}/>
+        );
+    }
+}
+
+const AddTodo = () => {
+    let input;
+    let handleAddTodo = () => {
+        if (!input.value) return;
+        let value = input.value.replace(/ /g, '');
+        store.dispatch({
+            type: 'ADD_TODO',
+            id: nextTodoId++,
+            text: value,
+        });
+        input.value = '';
+    }
+    return (
+        <div>
+            <input type="text" ref={ node => input = node}/>
+            <button onClick={handleAddTodo}>add todo</button>
+        </div>
     )
 }
 
-store.subscribe(render)
 
-render()
+
+class TodoApp extends React.Component {
+    render() {
+        return (
+            <div>
+                <AddTodo />
+                <FilterTodoList />
+                <Footer />
+            </div>
+        );
+    }
+}
+
+ReactDOM.render(
+    <TodoApp {...store.getState()}/>,
+    document.getElementById('root')
+)
