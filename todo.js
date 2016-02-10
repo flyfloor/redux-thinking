@@ -82,15 +82,42 @@ const todoAppReducer = (state = {}, action) => {
 const store = createStore(todoAppReducer)
 
 
-const FilterLink = ({filter, currentFilter, children, onClick}) => {
-    if (currentFilter === filter) return <span> {children} </span>;
+const Link = ({active, children, onClick}) => {
+    if (active) return <span> {children} </span>;
     return (
         <a href="javascript:;" style={{marginRight: 3}}
-            onClick={() => onClick(filter)}>
+            onClick={onClick}>
             {children}
         </a>
     )
 }
+
+class FilterLink extends React.Component {
+    componentDidMount() {
+        this.unsubscribe = store.subscribe(() => {
+            this.forceUpdate();
+        })    
+    }
+
+    componentWillUnmount() {
+        this.unsubscribe();
+    }
+
+    render() {
+        const props = this.props;
+        const state = store.getState();
+
+        console.log(state)
+
+        return (
+            <Link active={props.filter === state.displayFilter}
+                onClick={() => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter: props.filter })}>
+                {props.children}
+            </Link>
+        );
+    }
+}
+
 
 const getFilterTodos = (todos, filter) => {
     switch(filter) {
@@ -120,22 +147,16 @@ const TodoList = ({ todos, onTodoClick }) => {
             </ul>
 }
 
-const Footer = ({ displayFilter, onFliterClick }) => {
+const Footer = ({}) => {
     return <p>
                 filter: 
-                <FilterLink filter='ALL' 
-                    currentFilter={displayFilter}
-                    onClick={onFliterClick}>
+                <FilterLink filter='ALL'>
                     all
                 </FilterLink>
-                <FilterLink filter='COMPLETED' 
-                    currentFilter={displayFilter}
-                    onClick={onFliterClick}> 
+                <FilterLink filter='COMPLETED'> 
                     completed 
                 </FilterLink>
-                <FilterLink filter='ACTIVE' 
-                    currentFilter={displayFilter}
-                    onClick={onFliterClick}> 
+                <FilterLink filter='ACTIVE'>
                     active 
                 </FilterLink>
             </p>
