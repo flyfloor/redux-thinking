@@ -211,18 +211,14 @@ const AddTodo = () => {
     )
 }
 
-
-
-class TodoApp extends React.Component {
-    render() {
-        return (
-            <div>
-                <AddTodo />
-                <FilterTodoList />
-                <Footer />
-            </div>
-        );
-    }
+const TodoApp = () => {
+    return (
+        <div>
+            <AddTodo />
+            <FilterTodoList />
+            <Footer />
+        </div>
+    )
 }
 
 ReactDOM.render(
