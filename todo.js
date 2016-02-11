@@ -80,7 +80,7 @@ const todoAppReducer = (state = {}, action) => {
 }
 
 
-const Link = ({active, children, onClick}) => {
+const Link = ({ active, children, onClick }) => {
     if (active) return <span> {children} </span>;
     return (
         <a href="javascript:;" style={{marginRight: 3}}
@@ -103,7 +103,7 @@ const getFilterTodos = (todos, filter) => {
 
 const Todo = ({ text, completed, onClick }) => {
     return <li onClick={onClick}
-                style={{textDecoration: completed ? 'line-through': 'none'}}>
+                style={{ textDecoration: completed ? 'line-through': 'none' }}>
                 {text}
             </li>
 }
@@ -135,6 +135,31 @@ const Footer = ({}) => {
 }
 
 
+// action creator
+
+const setFilterAction = (filter) => {
+    return { 
+        type: 'SET_DISPLAY_FILTER', 
+        filter 
+    }
+}
+
+const toggleTodoAction = (id) => {
+    return {
+        id,
+        type: 'TOGGLE_TODO'
+    }
+}
+
+let nextTodoId = 0;
+const addTodoAction = (text) => {
+    return {
+        type: 'ADD_TODO',
+        id: nextTodoId++,
+        text: text,
+    }
+}
+
 // container
 
 
@@ -157,8 +182,6 @@ Provider.childContextTypes = {
 }
 
 
-let nextTodoId = 0;
-
 class FilterLink extends React.Component {
     componentDidMount() {
         const { store } = this.context;
@@ -178,7 +201,7 @@ class FilterLink extends React.Component {
 
         return (
             <Link active={props.filter === state.displayFilter}
-                onClick={() => store.dispatch({ type: 'SET_DISPLAY_FILTER', filter: props.filter })}>
+                onClick={() => store.dispatch(setFilterAction(props.filter))}>
                 {props.children}
             </Link>
         );
@@ -209,10 +232,7 @@ class FilterTodoList extends React.Component {
         return (
             <TodoList 
                 todos={ getFilterTodos(state.todos, state.displayFilter)}
-                onTodoClick={(id) => store.dispatch({
-                    id,
-                    type: 'TOGGLE_TODO'
-                })}/>
+                onTodoClick={(id) => store.dispatch(toggleTodoAction(id))}/>
         );
     }
 }
@@ -225,12 +245,8 @@ const AddTodo = (props, { store }) => {
     let input;
     let handleAddTodo = () => {
         if (!input.value) return;
-        let value = input.value.replace(/ /g, '');
-        store.dispatch({
-            type: 'ADD_TODO',
-            id: nextTodoId++,
-            text: value,
-        });
+        let text = input.value.replace(/ /g, '');
+        store.dispatch(addTodoAction(text));
         input.value = '';
     }
     return (
