@@ -134,14 +134,34 @@ const Footer = ({}) => {
             </p>
 }
 
-const store = createStore(todoAppReducer)
 
 // container
+
+
+class Provider extends React.Component {
+    getChildContext(){
+        return {
+            store: this.props.store
+        }
+    }
+
+    render() {
+        return (
+            this.props.children
+        );
+    }
+}
+
+Provider.childContextTypes = {
+    store: React.PropTypes.object
+}
+
 
 let nextTodoId = 0;
 
 class FilterLink extends React.Component {
     componentDidMount() {
+        const { store } = this.context;
         this.unsubscribe = store.subscribe(() => {
             this.forceUpdate();
         })    
@@ -153,6 +173,7 @@ class FilterLink extends React.Component {
 
     render() {
         const props = this.props;
+        const { store } = this.context;
         const state = store.getState();
 
         return (
@@ -164,9 +185,14 @@ class FilterLink extends React.Component {
     }
 }
 
+FilterLink.contextTypes = {
+    store: React.PropTypes.object
+}
+
 
 class FilterTodoList extends React.Component {
     componentDidMount() {
+        const { store } = this.context;
         this.unsubscribe = store.subscribe(() => {
             this.forceUpdate();
         })    
@@ -177,7 +203,7 @@ class FilterTodoList extends React.Component {
     }
 
     render() {
-        const props = this.props;
+        const { store } = this.context;
         const state = store.getState();
 
         return (
@@ -191,7 +217,11 @@ class FilterTodoList extends React.Component {
     }
 }
 
-const AddTodo = () => {
+FilterTodoList.contextTypes = {
+    store: React.PropTypes.object
+}
+
+const AddTodo = (props, { store }) => {
     let input;
     let handleAddTodo = () => {
         if (!input.value) return;
@@ -211,6 +241,10 @@ const AddTodo = () => {
     )
 }
 
+AddTodo.contextTypes = {
+    store: React.PropTypes.object
+}
+
 const TodoApp = () => {
     return (
         <div>
@@ -222,6 +256,8 @@ const TodoApp = () => {
 }
 
 ReactDOM.render(
-    <TodoApp {...store.getState()}/>,
+    <Provider store={createStore(todoAppReducer)}>
+        <TodoApp/>
+    </Provider>,
     document.getElementById('root')
 )
